@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>XAUUSD Compounding Tracker</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--tx:#1c1b18;--mu:#6d6a60;--bd:#e2dfd5;--gold:#b8860b;--g:#1a7f4b;--r:#c23a2b;--y:#9a6b00;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141311;--card:#1f1e1b;--tx:#f0eee6;--mu:#9b978a;--bd:#333128;--gold:#e0b64a;--g:#3ecf8e;--r:#ff6b5b;--y:#e0b64a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141311;--card:#1f1e1b;--tx:#f0eee6;--mu:#9b978a;--bd:#333128;--gold:#e0b64a;--g:#3ecf8e;--r:#ff6b5b;--y:#e0b64a;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 -apple-system,system-ui,Segoe UI,Roboto,sans-serif}
+.w{max-width:560px;margin:0 auto;padding:14px}
+h1{font-size:18px;margin:4px 0 12px;color:var(--gold)}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.big{font-size:34px;font-weight:700}
+.mu{color:var(--mu);font-size:12px}
+.bar{height:10px;background:var(--bd);border-radius:6px;overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:var(--gold);width:0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.s b{display:block;font-size:16px}
+label{display:block;font-size:12px;color:var(--mu);margin:8px 0 3px}
+input,textarea,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit;font-size:16px}
+input[type=range]{padding:0}
+button{font:inherit;font-weight:600;padding:12px 6px;border:0;border-radius:10px;background:var(--bd);color:var(--tx);cursor:pointer}
+button.w1{background:var(--g);color:#fff}button.l1{background:var(--r);color:#fff}button.e1{background:var(--y);color:#fff}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:left}
+.sc{overflow-x:auto}
+.pos{color:var(--g)}.neg{color:var(--r)}
+.days{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-top:6px}
+.days div{aspect-ratio:1;border-radius:5px;background:var(--bd);font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--mu)}
+.days .p{background:var(--g);color:#fff}.days .n{background:var(--r);color:#fff}.days .t{outline:2px solid var(--gold)}
+:root:root:root{--bg:#0b0b0c;--card:#151517;--tx:#f2efe6;--mu:#8d897c;--bd:#2a2a2d;--gold:#d4af37;--g:#2fd18b;--r:#e5594d;--y:#d4af37;color-scheme:dark}
+.c{border-radius:16px;box-shadow:0 1px 0 rgba(212,175,55,.15) inset}
+.kp{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:10px}.kp span{font-size:11px;color:var(--mu);display:block}.kp b{font-size:18px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px}.cal div{aspect-ratio:1/1.05;border-radius:10px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;cursor:pointer}.cal .h{aspect-ratio:auto;background:none;color:var(--mu);font-size:11px;cursor:default}.cal .gp{background:rgba(47,209,139,.2)}.cal .ls{background:rgba(229,89,77,.22)}.cal .be{background:var(--bd)}.cal small{font-size:11px;line-height:1}.cal .tdy{outline:1.5px solid var(--gold)}.cal .sl{outline:2px solid var(--tx)}
+</style></head><body><div class="w">
+<h1>GOLD JOURNAL PRO <span class="mu">v18</span></h1>
+
+<div class="c">
+<div class="mu">Balance</div><div class="big" id="bal">$0</div>
+<div class="bar"><i id="pb"></i></div>
+<div class="mu" id="pt"></div><div id="tm" style="color:var(--r);font-size:12px"></div>
+</div>
+
+<div class="c"><b>Dashboard</b>
+<div class="g2" id="kp" style="margin-top:8px"></div>
+<div class="mu" style="margin-top:10px">Equity curve</div>
+<svg id="eq" viewBox="0 0 300 110" style="width:100%"></svg>
+<div class="row" style="margin-top:8px"><svg id="dn" viewBox="0 0 80 80" style="max-width:110px"></svg><div class="mu" id="dl"></div></div>
+</div>
+<div class="c">
+<div class="g2">
+<div><label>Risk per trade: <b id="rv"></b>%</label><input type="range" id="risk" min="1" max="40" step="1"></div>
+<div><label>Reward ratio 1:<b id="rrv"></b></label><input type="range" id="rr" min="1" max="5" step="0.5"></div>
+</div>
+<div class="g2 s" style="margin-top:10px">
+<div><span class="mu">Risk $ (next)</span><b id="rk"></b></div>
+<div><span class="mu">Win pays</span><b id="wn"></b></div>
+<div><span class="mu">Stop loss (pips)</span><input id="sl" type="text" inputmode="decimal"></div>
+<div><span class="mu">Auto lot size</span><b id="al"></b><span class="mu" id="al2"></span></div>
+</div>
+</div>
+
+<div class="c">
+<div class="g2">
+<div><label>Lot size</label><input id="lot" type="text" inputmode="decimal" placeholder="0.01"></div>
+<div><label>Actual P/L $ (optional)</label><input id="act" type="text" inputmode="decimal" placeholder="auto"></div>
+</div>
+<label>Notes</label><textarea id="note" rows="2" placeholder="Setup, mistake, mood..."></textarea>
+<div class="g4" style="grid-template-columns:repeat(3,1fr);margin-top:10px">
+<button class="w1" id="bw">Win</button><button class="l1" id="bl">Loss</button>
+<button class="e1" id="be">Breakeven</button>
+</div>
+<div class="mu" style="margin-top:6px">Breakeven = logged at $0 (or your actual P/L).</div>
+</div>
+
+<div class="c">
+<div class="g4 s" id="st"></div>
+</div>
+
+<div class="c"><div class="row"><b id="cmt" style="flex:3"></b><button id="cpv" style="flex:0 0 44px">&lsaquo;</button><button id="cnx" style="flex:0 0 44px">&rsaquo;</button></div>
+<div class="mu" id="cms"></div>
+<div class="cal" id="cal"></div>
+<div class="mu" style="margin-top:6px">Tap a date to see that day in the journal below. Days with no trades are not losses.</div></div>
+<div class="c">
+<b>30-day journal</b> <span class="mu" id="jt"></span><div class="days" id="days"></div>
+<div class="sc" style="margin-top:8px"><table><thead><tr><th>D</th><th>Type</th><th>Lot</th><th>P/L</th><th>Bal</th></tr></thead><tbody id="jb"></tbody></table></div>
+</div>
+
+<div class="c">
+<b>Cash &amp; corrections</b> <span class="mu" id="cm"></span>
+<div class="row"><div><label>Amount $</label><input id="amt" type="text" inputmode="decimal"></div></div>
+<div class="g4" style="grid-template-columns:repeat(2,1fr);margin-top:8px">
+<button id="dep">Deposit</button><button id="wd">Withdraw</button>
+</div>
+<div class="g2" style="margin-top:8px">
+<div><label>Target $ (saves when you tap away)</label><input id="tg" type="text" inputmode="decimal"></div>
+</div>
+</div>
+
+<div class="c" style="margin-top:60px;border-color:var(--r)"><button id="bc" style="width:100%;background:transparent;color:var(--r);border:1px solid var(--r)">Clear all history</button></div>
+<div id="mo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;padding:20px"><div class="c" style="max-width:340px;width:100%;margin:0"><b>Are you sure you want to clear?</b><div class="mu" style="margin:6px 0 12px">All journal history will be deleted. This can’t be undone.</div><div class="g2"><button id="mn">Cancel</button><button id="my" class="l1">Yes, clear</button></div></div></div>
+</div>
+<script>
+var K='xau_tracker_v1',$=function(i){return document.getElementById(i)};
+var S={start:0,target:1000,sl:100,risk:20,rr:2,t0:Date.now(),e:[]};
+try{var raw=localStorage.getItem(K);if(raw){S=Object.assign(S,JSON.parse(raw))}}catch(x){}if(!S.e.length&&S.start===50)S.start=0;
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(x){}}
+function bal(){return S.e.length?S.e[S.e.length-1].after:S.start}
+function m(n){return(n<0?'-':'')+'$'+Math.abs(n).toFixed(2)}
+function cls(n){return n>0?'pos':n<0?'neg':''}
+function lotFor(b,sl){return b*S.risk/100/(sl*10)}function lotR(x){return Math.max(0.01,Math.floor(x*100)/100)}var sel=null;function sod(t){var d=new Date(t);return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()}function day(ts){return Math.round((sod(ts)-sod(S.t0))/864e5)+1}
+function msg(t){$('cm').textContent=t}window.onerror=function(e){$('tm').textContent='Error: '+e};
+function add(type,pl,extra){var b=bal();S.e.push(Object.assign({ts:Date.now(),type:type,pl:pl,before:b,after:Math.max(0,+(b+pl).toFixed(2)),lot:'',note:''},extra||{}));save();render()}
+function trade(type){
+  var b=bal(),rk=b*S.risk/100,pl=type==='Win'?rk*S.rr:type==='Loss'?-rk:0;
+  var a=$('act').value;if(a!==''){var pa=parseFloat(String(a).replace(',','.'));if(!isNaN(pa))pl=pa}
+  pl=+pl.toFixed(2);
+  add(type,pl,{lot:$('lot').value||$('lot').placeholder,note:$('note').value.trim()});
+  $('act').value='';$('note').value='';
+}
+function render(){
+  var b=bal(),tr=S.e.filter(function(x){return x.type==='Win'||x.type==='Loss'||x.type==='Breakeven'||x.type==='Error'});
+  var w=tr.filter(function(x){return x.type==='Win'}).length,l=tr.filter(function(x){return x.type==='Loss'}).length;
+  var net=tr.reduce(function(a,x){return a+x.pl},0),peak=S.start,dd=0;
+  S.e.forEach(function(x){peak=Math.max(peak,x.after);dd=Math.max(dd,peak?(peak-x.after)/peak*100:0)});
+  $('bal').textContent=m(b);$('bal').className='big '+(b>=S.start?'pos':'neg');
+  var p=Math.min(100,Math.max(0,b/S.target*100));
+  $('pb').style.width=p+'%';$('pt').textContent=p.toFixed(1)+'% of '+m(S.target)+' target';
+  $('risk').value=S.risk;$('rr').value=S.rr;$('rv').textContent=S.risk;$('rrv').textContent=S.rr;
+  var rk=b*S.risk/100;$('rk').textContent=m(rk);$('wn').textContent=m(rk*S.rr);
+  if(document.activeElement!==$('sl'))$('sl').value=S.sl;var ex=lotFor(b,S.sl);$('al').textContent=lotR(ex).toFixed(2);$('al2').textContent=(ex<0.01?' min lot risks more than set. ':' ')+'100p: '+lotR(lotFor(b,100)).toFixed(2)+' · 150p: '+lotR(lotFor(b,150)).toFixed(2);$('lot').placeholder=lotR(ex).toFixed(2);
+  var wr=w+l?(w/(w+l)*100).toFixed(0)+'%':'–';
+  $('st').innerHTML=[['Trades',tr.length],['Win rate',wr],['W / L',w+' / '+l],['Net P/L',m(net)],['Max DD',dd.toFixed(0)+'%'],['Avg win',w?m(tr.filter(function(x){return x.type==='Win'}).reduce(function(a,x){return a+x.pl},0)/w):'–'],['Avg loss',l?m(tr.filter(function(x){return x.type==='Loss'}).reduce(function(a,x){return a+x.pl},0)/l):'–'],['Days',Math.min(day(Date.now()),999)]].map(function(s){return '<div class="s"><span class="mu">'+s[0]+'</span><b>'+s[1]+'</b></div>'}).join('');
+  var dp={};S.e.forEach(function(x){var d=day(x.ts);dp[d]=(dp[d]||0)+x.pl});
+  var h='',td=day(Date.now());
+  for(var d=1;d<=30;d++)h+='<div data-d="'+d+'" style="cursor:pointer'+(d===sel?';outline:2px solid var(--tx)':'')+'" class="'+(dp[d]>0?'p':dp[d]<0?'n':'')+(d===td?' t':'')+'">'+d+'</div>';
+  $('days').innerHTML=h;Array.prototype.forEach.call($('days').children,function(e){e.onclick=function(){var d=+e.getAttribute('data-d');sel=sel===d?null:d;render()}});$('jt').textContent=sel?'Day '+sel+' (tap again for all)':'All days · tap a day to filter';
+  $('jb').innerHTML=S.e.filter(function(x){return sel===null||day(x.ts)===sel}).reverse().slice(0,60).map(function(x){return '<tr><td>'+day(x.ts)+'</td><td>'+x.type+(x.note?'<div class="mu">'+esc(x.note)+'</div>':'')+'</td><td>'+(x.lot||'')+'</td><td class="'+cls(x.pl)+'">'+m(x.pl)+'</td><td>'+m(x.after)+'</td></tr>'}).join('')||'<tr><td colspan="5" class="mu">'+(sel?'No data for day '+sel:'No entries yet.')+'</td></tr>';
+  $('tg').value=S.target;
+}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+$('risk').oninput=function(){S.risk=+this.value;save();render()};
+$('rr').oninput=function(){S.rr=+this.value;save();render()};
+$('sl').oninput=function(){var v=parseFloat(String(this.value).replace(',','.'));if(v>0){S.sl=v;save();render()}};
+$('tg').onchange=function(){var t=parseFloat(String($('tg').value).replace(',','.'));if(t>0){S.target=t;save();render();msg('Target set to '+m(t))}else msg('Enter a target amount.')};
+$('bw').onclick=function(){trade('Win')};$('bl').onclick=function(){trade('Loss')};$('be').onclick=function(){trade('Breakeven')};
+function two(b,lab,fn){var o=b.getAttribute('data-l')||b.textContent;b.setAttribute('data-l',o);if(b.dataset.arm){clearTimeout(b._t);delete b.dataset.arm;b.textContent=o;fn();return}b.dataset.arm=1;b.textContent=lab;b._t=setTimeout(function(){delete b.dataset.arm;b.textContent=o},3000)}
+$('bc').onclick=function(){$('mo').style.display='flex'};
+$('mn').onclick=function(){$('mo').style.display='none'};
+$('my').onclick=function(){S.e=[];S.t0=Date.now();save();render();$('mo').style.display='none';msg('History cleared.')};
+function amt(z){var a=parseFloat(String($('amt').value).replace(',','.'));if(isNaN(a)||a<0||(!z&&a===0)){msg('Enter an amount first.');return null}return a}function done(t){$('amt').value='';msg(t)}
+$('dep').onclick=function(){var a=amt();if(a===null)return;add('Deposit',a);done('Deposited '+m(a))};
+$('wd').onclick=function(){var a=amt();if(a===null)return;a=Math.min(a,bal());add('Withdraw',-a);done('Withdrew '+m(a))};
+function dash(){
+var tr=S.e.filter(function(x){return x.type==='Win'||x.type==='Loss'||x.type==='Breakeven'});
+var W=tr.filter(function(x){return x.pl>0}),L=tr.filter(function(x){return x.pl<0});
+var gp=W.reduce(function(a,x){return a+x.pl},0),gl=-L.reduce(function(a,x){return a+x.pl},0),n=tr.length,net=gp-gl;
+var pf=gl?(gp/gl).toFixed(2):(gp?'\u221e':'\u2013'),aw=W.length?gp/W.length:0,al=L.length?gl/L.length:0;
+var st=0,last=null;for(var i=tr.length-1;i>=0;i--){var q=tr[i].pl>0?1:tr[i].pl<0?-1:0;if(!q)continue;if(last===null)last=q;if(q===last)st++;else break}
+var pk=S.start,dd=0,ddp=0;S.e.forEach(function(x){pk=Math.max(pk,x.after);var d=pk-x.after;if(d>dd){dd=d;ddp=pk?d/pk*100:0}});
+var K=[['Net P/L',m(net),cls(net)],['Win rate',W.length+L.length?(W.length/(W.length+L.length)*100).toFixed(1)+'%':'\u2013',''],['Profit factor',pf,''],['Expectancy',n?m(net/n):'\u2013',cls(net)],['Max drawdown',m(-dd)+' ('+ddp.toFixed(0)+'%)','neg'],['Streak',last?st+(last>0?' wins':' losses'):'\u2013',last>0?'pos':last<0?'neg':''],['Avg win',m(aw),'pos'],['Avg loss',al?m(-al):'\u2013','neg']];
+$('kp').innerHTML=K.map(function(k){return '<div class="kp"><span>'+k[0]+'</span><b class="'+k[2]+'">'+k[1]+'</b></div>'}).join('');
+var pts=[S.start].concat(S.e.map(function(x){return x.after}));
+if(pts.length<2){$('eq').innerHTML='<text x="150" y="58" text-anchor="middle" style="fill:var(--mu);font-size:11px">No data yet</text>'}else{
+var mn=Math.min.apply(0,pts),mx=Math.max.apply(0,pts),rg=(mx-mn)||1,d=pts.map(function(v,k){return (k/(pts.length-1)*290+5).toFixed(1)+','+(100-(v-mn)/rg*90).toFixed(1)}).join(' ');
+$('eq').innerHTML='<polygon points="5,105 '+d+' 295,105" style="fill:var(--gold);opacity:.12"/><polyline points="'+d+'" style="fill:none;stroke:var(--gold);stroke-width:2"/>'}
+var tw=W.length,tl=L.length,tt=tw+tl,C=2*Math.PI*30;
+$('dn').innerHTML='<circle cx="40" cy="40" r="30" style="fill:none;stroke:'+(tt?'var(--r)':'var(--bd)')+';stroke-width:9"/>'+(tt?'<circle cx="40" cy="40" r="30" transform="rotate(-90 40 40)" style="fill:none;stroke:var(--g);stroke-width:9" stroke-dasharray="'+(tw/tt*C).toFixed(1)+' '+C.toFixed(1)+'"/>':'')+'<text x="40" y="44" text-anchor="middle" style="fill:var(--tx);font-size:13px;font-weight:700">'+(tt?Math.round(tw/tt*100)+'%':'\u2013')+'</text>';
+$('dl').innerHTML='<span class="pos">\u25cf '+tw+' wins</span><br><span class="neg">\u25cf '+tl+' losses</span><br>'+(n-tw-tl)+' breakeven'}
+var CY=new Date().getFullYear(),CM=new Date().getMonth();
+function cal(){
+var mp={};S.e.forEach(function(x){if(x.type==='Deposit'||x.type==='Withdraw'||x.type==='Correction')return;var d=new Date(x.ts),k=d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate(),o=mp[k]||(mp[k]={pl:0,n:0});o.pl+=x.pl;o.n++});
+var dim=new Date(CY,CM+1,0).getDate(),fd=new Date(CY,CM,1).getDay(),h='',mt=0,mn=0,t=new Date();
+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(function(n){h+='<div class="h">'+n+'</div>'});
+for(var i=0;i<fd;i++)h+='<div style="visibility:hidden"></div>';
+for(var d=1;d<=dim;d++){var o=mp[CY+'-'+CM+'-'+d],ts=new Date(CY,CM,d,12).getTime(),c=o?(o.pl>0?'gp':o.pl<0?'ls':'be'):'';
+if(o){mt+=o.pl;mn+=o.n}
+if(t.getFullYear()===CY&&t.getMonth()===CM&&t.getDate()===d)c+=' tdy';
+if(sel!==null&&day(ts)===sel)c+=' sl';
+h+='<div data-t="'+ts+'" class="'+c+'">'+d+(o?'<small class="'+(o.pl>0?'pos':o.pl<0?'neg':'')+'">'+(o.pl>0?'\u2197':o.pl<0?'\u2198':'\u2013')+'</small>':'')+'</div>'}
+$('cal').innerHTML=h;
+$('cmt').textContent=new Date(CY,CM,1).toLocaleString('en',{month:'long',year:'numeric'});
+$('cms').textContent='Month: '+m(mt)+' \u00b7 '+mn+' trades';
+Array.prototype.forEach.call($('cal').children,function(e){var v=e.getAttribute('data-t');if(!v)return;e.onclick=function(){var dn=day(+v);sel=sel===dn?null:dn;render()}})}
+$('cpv').onclick=function(){CM--;if(CM<0){CM=11;CY--}render()};
+$('cnx').onclick=function(){CM++;if(CM>11){CM=0;CY++}render()};
+var _r=render;render=function(){_r();dash();cal()};
+render();
+</script></body></html>
