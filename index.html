@@ -2,7 +2,8 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>XAUUSD Compounding Tracker</title>
+<title>Gold Journal Pro</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-title" content="Gold Journal"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#0b0b0c">
 <style>
 :root{--bg:#f6f5f1;--card:#fff;--tx:#1c1b18;--mu:#6d6a60;--bd:#e2dfd5;--gold:#b8860b;--g:#1a7f4b;--r:#c23a2b;--y:#9a6b00;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141311;--card:#1f1e1b;--tx:#f0eee6;--mu:#9b978a;--bd:#333128;--gold:#e0b64a;--g:#3ecf8e;--r:#ff6b5b;--y:#e0b64a;color-scheme:dark}}
@@ -37,9 +38,14 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:left}
 .c{border-radius:16px;box-shadow:0 1px 0 rgba(212,175,55,.15) inset}
 .kp{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:10px}.kp span{font-size:11px;color:var(--mu);display:block}.kp b{font-size:18px}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px}.cal div{aspect-ratio:1/1.05;border-radius:10px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;cursor:pointer}.cal .h{aspect-ratio:auto;background:none;color:var(--mu);font-size:11px;cursor:default}.cal .gp{background:rgba(47,209,139,.2)}.cal .ls{background:rgba(229,89,77,.22)}.cal .be{background:var(--bd)}.cal small{font-size:11px;line-height:1}.cal .tdy{outline:1.5px solid var(--gold)}.cal .sl{outline:2px solid var(--tx)}
+#nv{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px));z-index:40}#nv button{flex:1;background:none;color:var(--mu);padding:10px 4px;font-size:14px}#nv button.on{color:var(--gold)}
+.w{padding-bottom:100px}button:disabled{opacity:.35;cursor:not-allowed}.cal small{font-size:10px;line-height:1.2}
+.cal .gp{background:rgba(47,209,139,.45);border:1px solid #2fd18b}.cal .ls{background:rgba(229,89,77,.5);border:1px solid #e5594d}.cal .mx{background:linear-gradient(135deg,rgba(47,209,139,.5) 50%,rgba(229,89,77,.55) 50%);border:1px solid var(--gold)}.cal .gp,.cal .ls,.cal .mx{font-weight:700}.cal small .pos,.cal small .neg{color:#fff;font-weight:700}
+input[type=date]{-webkit-appearance:none;appearance:none;display:block;height:46px;min-width:0;text-align:left;line-height:1.2}input[type=date]::-webkit-date-and-time-value{text-align:left}input[type=date]::-webkit-datetime-edit{padding:0}#pgJ{overflow-x:hidden}.row>*{min-width:0}
+.cal div{position:relative}.cal .nt::after{content:'';position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#fff}
 </style></head><body><div class="w">
-<h1>GOLD JOURNAL PRO <span class="mu">v18</span></h1>
-
+<h1>GOLD JOURNAL PRO <span class="mu">v27</span></h1>
+<div id="pgH">
 <div class="c">
 <div class="mu">Balance</div><div class="big" id="bal">$0</div>
 <div class="bar"><i id="pb"></i></div>
@@ -75,19 +81,20 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:left}
 <button class="w1" id="bw">Win</button><button class="l1" id="bl">Loss</button>
 <button class="e1" id="be">Breakeven</button>
 </div>
+<div class="mu" id="tc" style="margin-top:8px"></div>
 <div class="mu" style="margin-top:6px">Breakeven = logged at $0 (or your actual P/L).</div>
 </div>
 
-<div class="c">
+<div class="c" style="display:none">
 <div class="g4 s" id="st"></div>
 </div>
 
 <div class="c"><div class="row"><b id="cmt" style="flex:3"></b><button id="cpv" style="flex:0 0 44px">&lsaquo;</button><button id="cnx" style="flex:0 0 44px">&rsaquo;</button></div>
-<div class="mu" id="cms"></div>
+<div class="mu" id="cms"></div><div id="cds" style="font-size:13px;margin-top:4px"></div>
 <div class="cal" id="cal"></div>
-<div class="mu" style="margin-top:6px">Tap a date to see that day in the journal below. Days with no trades are not losses.</div></div>
+<div class="mu" style="margin-top:6px">Tap a date to read its journal note. A white dot means a note is saved.</div></div>
 <div class="c">
-<b>30-day journal</b> <span class="mu" id="jt"></span><div class="days" id="days"></div>
+<b>30-day journal</b> <span class="mu" id="jt"></span><div class="days" id="days" style="display:none"></div>
 <div class="sc" style="margin-top:8px"><table><thead><tr><th>D</th><th>Type</th><th>Lot</th><th>P/L</th><th>Bal</th></tr></thead><tbody id="jb"></tbody></table></div>
 </div>
 
@@ -105,18 +112,27 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:left}
 <div class="c" style="margin-top:60px;border-color:var(--r)"><button id="bc" style="width:100%;background:transparent;color:var(--r);border:1px solid var(--r)">Clear all history</button></div>
 <div id="mo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;padding:20px"><div class="c" style="max-width:340px;width:100%;margin:0"><b>Are you sure you want to clear?</b><div class="mu" style="margin:6px 0 12px">All journal history will be deleted. This can’t be undone.</div><div class="g2"><button id="mn">Cancel</button><button id="my" class="l1">Yes, clear</button></div></div></div>
 </div>
+<div id="pgJ" style="display:none">
+<div class="c"><b>Journal</b><div class="mu">Write your mistakes, lessons and how you felt.</div><label>Date</label><div class="row"><button id="jpv" style="flex:0 0 46px">&lsaquo;</button><input id="jd" type="date"><button id="jnx" style="flex:0 0 46px">&rsaquo;</button></div><div class="mu" id="jdt" style="margin-top:8px"></div></div>
+<div class="c"><b>Emotion &amp; checklist</b><label>How did I feel?</label><select id="je"><option value="">Select...</option><option>Calm</option><option>Confident</option><option>Emotional</option><option>Anxious</option><option>Angry</option><option>Greedy</option><option>Fearful</option><option>Tired</option></select><label style="margin-top:12px">My checklist</label><div id="jc"></div><div class="row" style="margin-top:8px"><input id="jci" type="text" maxlength="60" placeholder="Add a checklist item"><button id="jca" style="flex:0 0 70px">Add</button></div></div>
+<div class="c"><b>Mistakes &amp; notes</b><textarea id="jtx" rows="7" style="margin-top:8px" placeholder="What went wrong? What will I do next time?"></textarea><button id="jsv" style="width:100%;margin-top:8px;background:var(--gold);color:#000">Save</button><div class="mu" style="margin-top:6px">After saving, this page clears for a new entry.</div><div class="mu" id="jmg" style="margin-top:6px"></div></div>
+<div class="c"><b>Saved entries</b> <span class="mu">tap one to read it</span><div id="jl" style="margin-top:6px"></div></div>
+</div>
+<nav id="nv"><button id="nvH" class="on">Home</button><button id="nvJ">Journal</button></nav>
+</div>
 <script>
 var K='xau_tracker_v1',$=function(i){return document.getElementById(i)};
 var S={start:0,target:1000,sl:100,risk:20,rr:2,t0:Date.now(),e:[]};
-try{var raw=localStorage.getItem(K);if(raw){S=Object.assign(S,JSON.parse(raw))}}catch(x){}if(!S.e.length&&S.start===50)S.start=0;
+try{var raw=localStorage.getItem(K);if(raw){S=Object.assign(S,JSON.parse(raw))}}catch(x){}if(!S.e.length&&S.start===50)S.start=0;S.prof=S.prof||{name:'',goal:'',photo:''};
 function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(x){}}
 function bal(){return S.e.length?S.e[S.e.length-1].after:S.start}
 function m(n){return(n<0?'-':'')+'$'+Math.abs(n).toFixed(2)}
 function cls(n){return n>0?'pos':n<0?'neg':''}
-function lotFor(b,sl){return b*S.risk/100/(sl*10)}function lotR(x){return Math.max(0.01,Math.floor(x*100)/100)}var sel=null;function sod(t){var d=new Date(t);return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()}function day(ts){return Math.round((sod(ts)-sod(S.t0))/864e5)+1}
+function lotFor(b,sl){return b*S.risk/100/(sl*10)}function lotR(x){return Math.max(0.01,Math.floor(x*100)/100)}function growth(){var c=S.start;S.e.forEach(function(x){if(x.type==='Deposit'||x.type==='Withdraw'||x.type==='Correction')c+=x.pl});return c>0?(bal()-c)/c*100:null}var sel=null;function sod(t){var d=new Date(t);return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()}function day(ts){return Math.round((sod(ts)-sod(S.t0))/864e5)+1}
 function msg(t){$('cm').textContent=t}window.onerror=function(e){$('tm').textContent='Error: '+e};
 function add(type,pl,extra){var b=bal();S.e.push(Object.assign({ts:Date.now(),type:type,pl:pl,before:b,after:Math.max(0,+(b+pl).toFixed(2)),lot:'',note:''},extra||{}));save();render()}
 function trade(type){
+  if(locked()){lim();return}
   var b=bal(),rk=b*S.risk/100,pl=type==='Win'?rk*S.rr:type==='Loss'?-rk:0;
   var a=$('act').value;if(a!==''){var pa=parseFloat(String(a).replace(',','.'));if(!isNaN(pa))pl=pa}
   pl=+pl.toFixed(2);
@@ -130,7 +146,7 @@ function render(){
   S.e.forEach(function(x){peak=Math.max(peak,x.after);dd=Math.max(dd,peak?(peak-x.after)/peak*100:0)});
   $('bal').textContent=m(b);$('bal').className='big '+(b>=S.start?'pos':'neg');
   var p=Math.min(100,Math.max(0,b/S.target*100));
-  $('pb').style.width=p+'%';$('pt').textContent=p.toFixed(1)+'% of '+m(S.target)+' target';
+  $('pb').style.width=p+'%';$('pt').textContent=p.toFixed(1)+'% of '+m(S.target)+' target'+(growth()!==null?' \u00b7 Growth '+(growth()>0?'+':'')+growth().toFixed(1)+'%':'');
   $('risk').value=S.risk;$('rr').value=S.rr;$('rv').textContent=S.risk;$('rrv').textContent=S.rr;
   var rk=b*S.risk/100;$('rk').textContent=m(rk);$('wn').textContent=m(rk*S.rr);
   if(document.activeElement!==$('sl'))$('sl').value=S.sl;var ex=lotFor(b,S.sl);$('al').textContent=lotR(ex).toFixed(2);$('al2').textContent=(ex<0.01?' min lot risks more than set. ':' ')+'100p: '+lotR(lotFor(b,100)).toFixed(2)+' · 150p: '+lotR(lotFor(b,150)).toFixed(2);$('lot').placeholder=lotR(ex).toFixed(2);
@@ -163,8 +179,9 @@ var gp=W.reduce(function(a,x){return a+x.pl},0),gl=-L.reduce(function(a,x){retur
 var pf=gl?(gp/gl).toFixed(2):(gp?'\u221e':'\u2013'),aw=W.length?gp/W.length:0,al=L.length?gl/L.length:0;
 var st=0,last=null;for(var i=tr.length-1;i>=0;i--){var q=tr[i].pl>0?1:tr[i].pl<0?-1:0;if(!q)continue;if(last===null)last=q;if(q===last)st++;else break}
 var pk=S.start,dd=0,ddp=0;S.e.forEach(function(x){pk=Math.max(pk,x.after);var d=pk-x.after;if(d>dd){dd=d;ddp=pk?d/pk*100:0}});
-var K=[['Net P/L',m(net),cls(net)],['Win rate',W.length+L.length?(W.length/(W.length+L.length)*100).toFixed(1)+'%':'\u2013',''],['Profit factor',pf,''],['Expectancy',n?m(net/n):'\u2013',cls(net)],['Max drawdown',m(-dd)+' ('+ddp.toFixed(0)+'%)','neg'],['Streak',last?st+(last>0?' wins':' losses'):'\u2013',last>0?'pos':last<0?'neg':''],['Avg win',m(aw),'pos'],['Avg loss',al?m(-al):'\u2013','neg']];
-$('kp').innerHTML=K.map(function(k){return '<div class="kp"><span>'+k[0]+'</span><b class="'+k[2]+'">'+k[1]+'</b></div>'}).join('');
+var gr=growth();
+var K=[['Growth',gr===null?'\u2013':(gr>0?'+':'')+gr.toFixed(1)+'%',gr>0?'pos':gr<0?'neg':'','Wins '+W.length+' \u00b7 Losses '+L.length],['Net P/L',m(net),cls(net)],['Win rate',W.length+L.length?(W.length/(W.length+L.length)*100).toFixed(1)+'%':'\u2013',''],['Wins / Losses',W.length+' / '+L.length,''],['Max drawdown',m(-dd)+' ('+ddp.toFixed(0)+'%)','neg'],['Streak',last?st+(last>0?' wins':' losses'):'\u2013',last>0?'pos':last<0?'neg':'']];
+$('kp').innerHTML=K.map(function(k){return '<div class="kp"><span>'+k[0]+'</span><b class="'+k[2]+'">'+k[1]+'</b>'+(k[3]?'<span style="margin-top:2px">'+k[3]+'</span>':'')+'</div>'}).join('');
 var pts=[S.start].concat(S.e.map(function(x){return x.after}));
 if(pts.length<2){$('eq').innerHTML='<text x="150" y="58" text-anchor="middle" style="fill:var(--mu);font-size:11px">No data yet</text>'}else{
 var mn=Math.min.apply(0,pts),mx=Math.max.apply(0,pts),rg=(mx-mn)||1,d=pts.map(function(v,k){return (k/(pts.length-1)*290+5).toFixed(1)+','+(100-(v-mn)/rg*90).toFixed(1)}).join(' ');
@@ -174,21 +191,52 @@ $('dn').innerHTML='<circle cx="40" cy="40" r="30" style="fill:none;stroke:'+(tt?
 $('dl').innerHTML='<span class="pos">\u25cf '+tw+' wins</span><br><span class="neg">\u25cf '+tl+' losses</span><br>'+(n-tw-tl)+' breakeven'}
 var CY=new Date().getFullYear(),CM=new Date().getMonth();
 function cal(){
-var mp={};S.e.forEach(function(x){if(x.type==='Deposit'||x.type==='Withdraw'||x.type==='Correction')return;var d=new Date(x.ts),k=d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate(),o=mp[k]||(mp[k]={pl:0,n:0});o.pl+=x.pl;o.n++});
-var dim=new Date(CY,CM+1,0).getDate(),fd=new Date(CY,CM,1).getDay(),h='',mt=0,mn=0,t=new Date();
+var mp={};S.e.forEach(function(x){if(x.type==='Deposit'||x.type==='Withdraw'||x.type==='Correction')return;var d=new Date(x.ts),k=d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate(),o=mp[k]||(mp[k]={pl:0,n:0,w:0,l:0});o.pl+=x.pl;o.n++;if(x.pl>0)o.w++;else if(x.pl<0)o.l++});
+var dim=new Date(CY,CM+1,0).getDate(),fd=new Date(CY,CM,1).getDay(),h='',mt=0,mn=0,mw=0,ml=0,t=new Date();
 ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(function(n){h+='<div class="h">'+n+'</div>'});
 for(var i=0;i<fd;i++)h+='<div style="visibility:hidden"></div>';
-for(var d=1;d<=dim;d++){var o=mp[CY+'-'+CM+'-'+d],ts=new Date(CY,CM,d,12).getTime(),c=o?(o.pl>0?'gp':o.pl<0?'ls':'be'):'';
-if(o){mt+=o.pl;mn+=o.n}
+for(var d=1;d<=dim;d++){var o=mp[CY+'-'+CM+'-'+d],ts=new Date(CY,CM,d,12).getTime(),c=o?(o.w&&o.l?'mx':o.w?'gp':o.l?'ls':'be'):'';
+if(o){mt+=o.pl;mn+=o.n;mw+=o.w;ml+=o.l}
 if(t.getFullYear()===CY&&t.getMonth()===CM&&t.getDate()===d)c+=' tdy';
-if(sel!==null&&day(ts)===sel)c+=' sl';
-h+='<div data-t="'+ts+'" class="'+c+'">'+d+(o?'<small class="'+(o.pl>0?'pos':o.pl<0?'neg':'')+'">'+(o.pl>0?'\u2197':o.pl<0?'\u2198':'\u2013')+'</small>':'')+'</div>'}
+if(S.jl.some(function(x){return x.d===dk(new Date(ts))}))c+=' nt';
+if(SD&&dk(new Date(ts))===SD)c+=' sl';
+h+='<div data-t="'+ts+'" class="'+c+'">'+d+(o?'<small style="color:var(--gold);font-size:7px;letter-spacing:1px">'+'\u25cf'.repeat(Math.min(o.n,3))+'</small><small>'+(o.w?'<span class="pos">'+o.w+'W</span> ':'')+(o.l?'<span class="neg">'+o.l+'L</span>':'')+(!o.w&&!o.l?'\u2013':'')+'</small>':'')+'</div>'}
 $('cal').innerHTML=h;
 $('cmt').textContent=new Date(CY,CM,1).toLocaleString('en',{month:'long',year:'numeric'});
-$('cms').textContent='Month: '+m(mt)+' \u00b7 '+mn+' trades';
-Array.prototype.forEach.call($('cal').children,function(e){var v=e.getAttribute('data-t');if(!v)return;e.onclick=function(){var dn=day(+v);sel=sel===dn?null:dn;render()}})}
+$('cms').textContent='Month: '+m(mt)+' \u00b7 '+mw+' wins \u00b7 '+ml+' losses';
+if(SD){var q=SD.split('-'),o2=mp[+q[0]+'-'+(+q[1]-1)+'-'+(+q[2])];$('cds').innerHTML='<b>'+SD+'</b> \u00b7 '+(o2?'<span class="pos">'+o2.w+'W</span> \u00b7 <span class="neg">'+o2.l+'L</span> \u00b7 '+m(o2.pl):'No trades')+(function(){var js=S.jl.filter(function(x){return x.d===SD}),ids=S.cl.map(function(c){return c.id});if(!js.length)return '<div class="mu">No journal note for this day.</div>';return js.map(function(j){var n=j.c.filter(function(v){return ids.indexOf(v)>-1}).length;return '<div class="mu" style="margin-top:6px">'+(j.emo?esc(j.emo)+' \u00b7 ':'')+n+'/'+ids.length+' checks</div>'+(j.t?'<div style="margin-top:4px;padding:10px;border:1px solid var(--bd);border-radius:10px;white-space:pre-wrap;font-size:14px">'+esc(j.t)+'</div>':'')}).join('')})()}else $('cds').innerHTML='';
+Array.prototype.forEach.call($('cal').children,function(e){var v=e.getAttribute('data-t');if(!v)return;e.onclick=function(){SD=dk(new Date(+v));render()}})}
 $('cpv').onclick=function(){CM--;if(CM<0){CM=11;CY--}render()};
 $('cnx').onclick=function(){CM++;if(CM>11){CM=0;CY++}render()};
-var _r=render;render=function(){_r();dash();cal()};
+try{if('serviceWorker' in navigator&&location.protocol==='https:'&&location.hostname.indexOf('claude')<0)navigator.serviceWorker.register('sw.js')}catch(x){}
+var MAXT=2,SD='';
+function todayC(){var d=new Date().toDateString(),a=S.e.filter(function(x){return(x.type==='Win'||x.type==='Loss'||x.type==='Breakeven')&&new Date(x.ts).toDateString()===d});return{n:a.filter(function(x){return x.type!=='Breakeven'}).length,t:a.length}}
+function locked(){var c=todayC();return c.n>=MAXT||c.t>=3}
+function lim(){var c=todayC(),f=c.n>=MAXT||c.t>=3,be=c.t-c.n;['bw','bl','be'].forEach(function(i){$(i).disabled=f});$('tc').innerHTML='Today: <b>'+c.n+'/'+MAXT+'</b> trades'+(be?' \u00b7 '+be+' breakeven (not counted)':'')+(f?' \u00b7 <span class="neg">Limit reached. Unlocks tomorrow.</span>':'')}
+function dk(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+S.cl=S.cl||[{id:1,t:'Waited for my setup'},{id:2,t:'Stop-loss set before entry'},{id:3,t:'Risk within my plan'},{id:4,t:'No revenge trade'}];if(!S.jl){S.jl=[];Object.keys(S.jn||{}).forEach(function(k,i){var e=S.jn[k];S.jl.push({id:Date.now()+i,d:k,emo:e.emo||'',c:e.c||[],t:e.t||''})});delete S.jn}var JC=[];
+function show(p){$('pgH').style.display=p==='H'?'block':'none';$('pgJ').style.display=p==='J'?'block':'none';$('nvH').className=p==='H'?'on':'';$('nvJ').className=p==='J'?'on':'';window.scrollTo(0,0)}
+function openJ(ts){$('jd').value=dk(new Date(ts));show('J');jr()}
+function tg(id,on){var i=JC.indexOf(id);if(on&&i<0)JC.push(id);if(!on&&i>-1)JC.splice(i,1)}
+function dx(id,b){two(b,'Sure?',function(){S.cl=S.cl.filter(function(c){return c.id!==id});JC=JC.filter(function(v){return v!==id});save();jr()})}
+function de(id,b){two(b,'Sure?',function(){S.jl=S.jl.filter(function(x){return x.id!==id});save();jl();cal()})}
+function tgl(id){var e=$('ex'+id);e.style.display=e.style.display==='none'?'block':'none'}
+function fresh(){JC=[];$('jtx').value='';$('je').value=''}
+function jr(){var k=$('jd').value;if(!k){k=dk(new Date());$('jd').value=k}
+$('jc').innerHTML=S.cl.map(function(c){return '<div class="row" style="margin:6px 0"><label style="flex:1;display:flex;gap:10px;align-items:center;margin:0;color:var(--tx);font-size:15px"><input type="checkbox" style="width:22px;height:22px;flex:0 0 22px;padding:0"'+(JC.indexOf(c.id)>-1?' checked':'')+' onchange="tg('+c.id+',this.checked)">'+esc(c.t)+'</label><button onclick="dx('+c.id+',this)" style="flex:0 0 58px;padding:6px">\u2715</button></div>'}).join('')||'<div class="mu">No items yet. Add one below.</div>';
+var ts=S.e.filter(function(x){return(x.type==='Win'||x.type==='Loss'||x.type==='Breakeven')&&dk(new Date(x.ts))===k});
+$('jdt').innerHTML=ts.length?ts.map(function(x){return '<span class="'+cls(x.pl)+'">'+x.type+' '+m(x.pl)+'</span>'}).join(' \u00b7 ')+' \u00b7 '+ts.length+' trade'+(ts.length>1?'s':''):'No trades on this day.';jl()}
+function jl(){var ids=S.cl.map(function(c){return c.id}),L=S.jl.slice().sort(function(a,b){return a.d<b.d?1:a.d>b.d?-1:b.id-a.id}).slice(0,60);
+$('jl').innerHTML=L.map(function(x){var n=x.c.filter(function(v){return ids.indexOf(v)>-1}).length,dn=S.cl.filter(function(c){return x.c.indexOf(c.id)>-1}).map(function(c){return esc(c.t)}).join(', ');
+return '<div style="padding:10px 0;border-bottom:1px solid var(--bd)"><div class="row" onclick="tgl('+x.id+')" style="cursor:pointer"><b>'+x.d+'</b><span class="mu" style="text-align:right">'+(x.emo?esc(x.emo)+' \u00b7 ':'')+n+'/'+ids.length+' checks</span></div><div class="mu" style="margin-top:2px">'+esc((x.t||'No note').split('\n')[0].slice(0,80))+'</div><div id="ex'+x.id+'" style="display:none;margin-top:8px"><div style="white-space:pre-wrap;font-size:14px;padding:10px;border:1px solid var(--bd);border-radius:10px">'+esc(x.t||'No note')+'</div>'+(dn?'<div class="mu" style="margin-top:6px">Done: '+dn+'</div>':'')+'<button onclick="de('+x.id+',this)" style="margin-top:8px;padding:8px 14px">Delete</button></div></div>'}).join('')||'<div class="mu">Nothing saved yet.</div>'}
+$('nvH').onclick=function(){show('H')};$('nvJ').onclick=function(){$('jd').value=dk(new Date());show('J');jr()};
+$('jd').onchange=jr;
+$('jsv').onclick=function(){var t=$('jtx').value.trim(),emo=$('je').value;if(!t&&!emo&&!JC.length){$('jmg').textContent='Write something first.';return}
+S.jl.push({id:Date.now(),d:$('jd').value||dk(new Date()),emo:emo,c:JC.slice(),t:t});save();fresh();jr();cal();$('jmg').textContent='Saved \u2713 '+new Date().toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'})+' \u00b7 see it in Saved entries below'};
+$('jca').onclick=function(){var t=$('jci').value.trim();if(!t)return;S.cl.push({id:Date.now(),t:t.slice(0,60)});$('jci').value='';save();jr()};
+setInterval(lim,60000);
+function sd(n){var d=new Date(($('jd').value||dk(new Date()))+'T12:00:00');d.setDate(d.getDate()+n);$('jd').value=dk(d);jr()}
+$('jpv').onclick=function(){sd(-1)};$('jnx').onclick=function(){sd(1)};
+var _r=render;render=function(){_r();dash();cal();lim()};
 render();
 </script></body></html>
